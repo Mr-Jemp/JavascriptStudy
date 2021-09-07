@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>策略模式的表单验证写法</title></title>
+</head>
+<body>
+	<input id="input" type="text" name="input">
+	<button id="btn">走你</button>
+</body>
+</html>
+<script type="text/javascript">
+	const btn = document.getElementById('btn')
+	const input = document.getElementById('input')
+	
+	btn.onclick = function() {
+		send(input.value)
+	}
+
+	// 策略配置对象
+	const formStrategy = {
+		_notEmpty(val) {
+			if(val === '') {
+				console.warn('内容不能为空')
+				return false
+			}
+			return true
+		},
+		_maxLength(val) {
+			if(val.length > 20) {
+				console.warn('最多输入二十个字')
+				return false
+			}
+			return true
+		}
+	}
+
+	// 验证函数
+	function validata() {
+		for(let i in formStrategy) {
+			if(formStrategy[i].apply(this, arguments) === false) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	// 发送
+	function send(val) {
+		// 简化代码
+		if(!validata(val)) return
+		submit()
+	}
+
+	// 模拟提交代码
+	function submit() {
+		console.log('提交成功')
+	}
+
+	// 总结：虽然使用策略模式在一定程度上提高了代码质量，但依然没能解决发送函数和验证函数的耦合关系
+
+</script>

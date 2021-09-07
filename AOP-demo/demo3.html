@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>AOP表单验证写法</title>
+</head>
+<body>
+	<input id="input" type="text" name="input">
+	<button id="btn">走你</button>
+</body>
+</html>
+<script type="text/javascript">
+	const btn = document.getElementById('btn')
+	const input = document.getElementById('input')
+	
+	btn.onclick = function() {
+		send(input.value)
+	}
+
+	// 策略配置对象
+	const formStrategy = {
+		_notEmpty(val) {
+			if(val === '') {
+				console.warn('内容不能为空')
+				return false
+			}
+			return true
+		},
+		_maxLength(val) {
+			if(val.length > 20) {
+				console.warn('最多输入二十个字')
+				return false
+			}
+			return true
+		}
+	}
+
+	// 验证函数
+	function validata() {
+		for(let i in formStrategy) {
+			if(formStrategy[i].apply(this, arguments) === false) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	// 发送
+	function send(val) {
+		submit()
+	}
+
+	// 模拟提交代码
+	function submit() {
+		console.log('提交成功')
+	}
+
+	// AOP切面
+	// 在调用函数之前进行验证，如果验证失败则不执行后续
+	Function.prototype.before = function(func) {
+		let _self = this // 利用闭包将调用对象存下来（本例是send函数）
+		// 点击按钮时调用的是这个function
+		return function() {
+			// func指的是传进来的validata函数
+			// validata函数如果验证不通过就阻断后面代码执行
+			if(func.apply(_self, arguments) === false) {
+				return
+			}
+			// 如果验证通过则调用保存的_self，也就是send函数
+			return _self.apply(this, arguments)
+		}
+	}
+
+	// 将send方法作为切点，与装饰者模式类似，不同的是装饰者模式更偏向静态代理，而AOP是动态代理
+	send = send.before(validata)
+
+	// 总结：AOP组织代码的情况下，与原代码没有耦合关系，轻松实现了功能，更符合单一职责原则
+
+</script>
